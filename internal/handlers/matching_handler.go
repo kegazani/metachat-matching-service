@@ -31,6 +31,7 @@ func (h *MatchingHandler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/users/{id}/similar", h.FindSimilarUsers).Methods("GET")
 	router.HandleFunc("/users/{id1}/similarity/{id2}", h.CalculateUserSimilarity).Methods("GET")
 	router.HandleFunc("/users/{id}/matches", h.GetUserMatches).Methods("GET")
+	router.HandleFunc("/users/{id1}/common-topics/{id2}", h.GetCommonTopics).Methods("GET")
 }
 
 // FindSimilarUsers handles the request to find similar users
@@ -95,4 +96,26 @@ func (h *MatchingHandler) GetUserMatches(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(matches)
+}
+
+// GetCommonTopics handles the request to get common topics between two users
+func (h *MatchingHandler) GetCommonTopics(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID1 := vars["id1"]
+	userID2 := vars["id2"]
+
+	topics, err := h.matchingService.GetCommonTopics(r.Context(), userID1, userID2)
+	if err != nil {
+		h.logger.WithError(err).Error("Failed to get common topics")
+		http.Error(w, "Failed to get common topics", http.StatusInternalServerError)
+		return
+	}
+
+	result := map[string]interface{}{
+		"common_topics": topics,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(result)
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
+	"metachat/matching-service/internal/repository"
 	"metachat/matching-service/internal/service"
 )
 
@@ -71,7 +72,7 @@ func (h *UserHandler) UpdateUserPortrait(w http.ResponseWriter, r *http.Request)
 	vars := mux.Vars(r)
 	userID := vars["id"]
 
-	var portrait service.UserPortrait
+	var portrait repository.UserPortrait
 	if err := json.NewDecoder(r.Body).Decode(&portrait); err != nil {
 		h.logger.WithError(err).Error("Failed to decode request body")
 		http.Error(w, "Invalid request body", http.StatusBadRequest)

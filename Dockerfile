@@ -1,18 +1,15 @@
 # Build stage
-FROM golang:1.21-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
-# Copy go mod files
-COPY go.mod go.sum ./
+COPY metachat-matching-service/go.mod ./
+RUN apk add --no-cache git && go mod download
 
-# Download dependencies
-RUN go mod download
+COPY metachat-matching-service/ .
 
-# Copy the entire source code
-COPY . .
+RUN go mod tidy
 
-# Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/main.go
 
 # Final stage
@@ -26,7 +23,6 @@ COPY --from=builder /app/main .
 # Copy configuration files
 COPY --from=builder /app/config ./config
 
-# Expose port
 EXPOSE 8080
 
 # Command to run the application

@@ -20,6 +20,27 @@ type MatchingRepository interface {
 	GetUserMatches(ctx context.Context, userID string) ([]*UserMatch, error)
 }
 
+// GetCommonTopics extracts common topics from two user portraits
+func GetCommonTopics(portrait1, portrait2 *UserPortrait) []string {
+	if portrait1 == nil || portrait2 == nil {
+		return []string{}
+	}
+
+	interests1 := make(map[string]bool)
+	for _, interest := range portrait1.Interests {
+		interests1[interest] = true
+	}
+
+	var commonTopics []string
+	for _, interest := range portrait2.Interests {
+		if interests1[interest] {
+			commonTopics = append(commonTopics, interest)
+		}
+	}
+
+	return commonTopics
+}
+
 // UserMatch represents a match between two users
 type UserMatch struct {
 	UserID1    string   `json:"user_id1"`

@@ -20,6 +20,9 @@ type MatchingService interface {
 
 	// GetUserMatches retrieves all matches for a user
 	GetUserMatches(ctx context.Context, userID string) ([]*repository.UserMatch, error)
+
+	// GetCommonTopics retrieves common topics between two users
+	GetCommonTopics(ctx context.Context, userID1, userID2 string) ([]string, error)
 }
 
 // matchingService is the implementation of MatchingService
@@ -117,4 +120,19 @@ func (s *matchingService) SaveUserMatch(ctx context.Context, match *repository.U
 // GetUserMatches retrieves all matches for a user
 func (s *matchingService) GetUserMatches(ctx context.Context, userID string) ([]*repository.UserMatch, error) {
 	return s.matchingRepository.GetUserMatches(ctx, userID)
+}
+
+// GetCommonTopics retrieves common topics between two users
+func (s *matchingService) GetCommonTopics(ctx context.Context, userID1, userID2 string) ([]string, error) {
+	portrait1, err := s.userRepository.GetUserPortrait(ctx, userID1)
+	if err != nil {
+		return nil, err
+	}
+
+	portrait2, err := s.userRepository.GetUserPortrait(ctx, userID2)
+	if err != nil {
+		return nil, err
+	}
+
+	return repository.GetCommonTopics(portrait1, portrait2), nil
 }
